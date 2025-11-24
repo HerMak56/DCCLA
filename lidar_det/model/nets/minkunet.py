@@ -53,7 +53,7 @@ class BasicDeconvolutionBlock(nn.Module):
         if stride == 1 and ks == 3:
             ks = _ks
         self.net = nn.Sequential(
-            spnn.Conv3d(inc, outc, kernel_size=ks, stride=stride, transpose=True),
+            spnn.Conv3d(inc, outc, kernel_size=ks, stride=stride, transposed=True),
             spnn.BatchNorm(outc),
             spnn.ReLU(True)
         )
@@ -66,7 +66,7 @@ class BasicDeconvolutionBlockup(nn.Module):
     def __init__(self, inc, outc, ks=2, stride=2):
         super().__init__()
         self.net = nn.Sequential(
-            spnn.Conv3d(inc, outc, kernel_size=ks, stride=stride, transpose=True),
+            spnn.Conv3d(inc, outc, kernel_size=ks, stride=stride, transposed=True),
             spnn.BatchNorm(outc),
             # spnn.ReLU(True),
         )

@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 
 from torchsparse import SparseTensor
-from torchsparse.utils import sparse_quantize
+from torchsparse.utils.quantize import sparse_quantize
 
 import lidar_det.utils.jrdb_transforms as jt
 import lidar_det.utils.utils_box3d as ub3d
@@ -88,10 +88,12 @@ class _DatasetBase(Dataset):
         # voxel coordinate
         pc_voxel = np.round(pc / self._voxel_size) + self._voxel_offset
         pc_voxel = pc_voxel.T
-        inds, inverse_map = sparse_quantize(
-            pc_voxel, feats=None, labels=None, return_index=True, return_invs=True,
-        )  # NOTE all this does is find indices of non-duplicating elements
-
+        # inds, inverse_map = sparse_quantize(
+        #     pc_voxel, feats=None, labels=None, return_index=True, return_invs=True,
+        # )  # NOTE all this does is find indices of non-duplicating elements
+        _, inds, inverse_map = sparse_quantize(
+            pc_voxel, return_index=True, return_inverse=True,
+        )  
         # for nuScenes with multisweep, only do prediction for keyframe voxels
         if "pc_dt" in data_dict:
             pc_dt = data_dict["pc_dt"]
