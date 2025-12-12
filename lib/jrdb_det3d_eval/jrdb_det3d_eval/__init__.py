@@ -17,9 +17,18 @@ def _eval_seq(gt_annos, det_annos):
     print(result_str)
     # for k, v in result_dict.items():
     #     print(k, v)
-    seq_ap = result_dict["Pedestrian_3d/moderate_R40"]
-    print('Pedestrian_3d easy_R40 moderate_R40 hard_R40:\n {:.6f} {:.6f} {:.6f}'.format(
-        result_dict['Pedestrian_3d/easy_R40'], result_dict['Pedestrian_3d/moderate_R40'], result_dict['Pedestrian_3d/hard_R40']))
+    strict = result_dict.get("Pedestrian_3d/moderate_R40_strict", None)
+    loose = result_dict.get("Pedestrian_3d/moderate_R40_loose", None)
+    seq_ap = strict if strict is not None else loose
+    print('Pedestrian_3d 3D AP_R40 strict/loose (moderate): {:.6f} / {:.6f}'.format(
+        strict if strict is not None else float('nan'),
+        loose if loose is not None else float('nan')))
+    if "Pedestrian_3d/easy_R40_strict" in result_dict:
+        print('Pedestrian_3d easy/moderate/hard strict:\n {:.6f} {:.6f} {:.6f}'.format(
+            result_dict['Pedestrian_3d/easy_R40_strict'], result_dict['Pedestrian_3d/moderate_R40_strict'], result_dict['Pedestrian_3d/hard_R40_strict']))
+    if "Pedestrian_3d/easy_R40_loose" in result_dict:
+        print('Pedestrian_3d easy/moderate/hard loose:\n {:.6f} {:.6f} {:.6f}'.format(
+            result_dict['Pedestrian_3d/easy_R40_loose'], result_dict['Pedestrian_3d/moderate_R40_loose'], result_dict['Pedestrian_3d/hard_R40_loose']))
 
     return seq_ap
 

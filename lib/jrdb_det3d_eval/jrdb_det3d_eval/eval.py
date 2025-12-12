@@ -1,4 +1,5 @@
 import io as sysio
+import os
 
 import numba
 import numpy as np
@@ -776,26 +777,23 @@ def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict
                    ret_dict['%s_aos/moderate_R40' % class_to_name[curcls]] = mAPaos_R40[j, 1, 0]
                    ret_dict['%s_aos/hard_R40' % class_to_name[curcls]] = mAPaos_R40[j, 2, 0]
 
-            if i == 1:
-                # ret_dict['%s_3d/easy' % class_to_name[curcls]] = mAP3d[j, 0, 0]
-                # ret_dict['%s_3d/moderate' % class_to_name[curcls]] = mAP3d[j, 1, 0]
-                # ret_dict['%s_3d/hard' % class_to_name[curcls]] = mAP3d[j, 2, 0]
-                # ret_dict['%s_bev/easy' % class_to_name[curcls]] = mAPbev[j, 0, 0]
-                # ret_dict['%s_bev/moderate' % class_to_name[curcls]] = mAPbev[j, 1, 0]
-                # ret_dict['%s_bev/hard' % class_to_name[curcls]] = mAPbev[j, 2, 0]
-                # ret_dict['%s_image/easy' % class_to_name[curcls]] = mAPbbox[j, 0, 0]
-                # ret_dict['%s_image/moderate' % class_to_name[curcls]] = mAPbbox[j, 1, 0]
-                # ret_dict['%s_image/hard' % class_to_name[curcls]] = mAPbbox[j, 2, 0]
+            # Save R40 AP separately for strict (i=0) and loose (i=1) overlaps
+            suffix = "strict" if i == 0 else "loose"
+            ret_dict[f"{class_to_name[curcls]}_3d/easy_R40_{suffix}"] = mAP3d_R40[j, 0, i]
+            ret_dict[f"{class_to_name[curcls]}_3d/moderate_R40_{suffix}"] = mAP3d_R40[j, 1, i]
+            ret_dict[f"{class_to_name[curcls]}_3d/hard_R40_{suffix}"] = mAP3d_R40[j, 2, i]
+            ret_dict[f"{class_to_name[curcls]}_bev/easy_R40_{suffix}"] = mAPbev_R40[j, 0, i]
+            ret_dict[f"{class_to_name[curcls]}_bev/moderate_R40_{suffix}"] = mAPbev_R40[j, 1, i]
+            ret_dict[f"{class_to_name[curcls]}_bev/hard_R40_{suffix}"] = mAPbev_R40[j, 2, i]
+            ret_dict[f"{class_to_name[curcls]}_image/easy_R40_{suffix}"] = mAPbbox_R40[j, 0, i]
+            ret_dict[f"{class_to_name[curcls]}_image/moderate_R40_{suffix}"] = mAPbbox_R40[j, 1, i]
+            ret_dict[f"{class_to_name[curcls]}_image/hard_R40_{suffix}"] = mAPbbox_R40[j, 2, i]
 
+            # Backward-compatible keys (loose overlap as before)
+            if i == 1:
                 ret_dict['%s_3d/easy_R40' % class_to_name[curcls]] = mAP3d_R40[j, 0, i]
                 ret_dict['%s_3d/moderate_R40' % class_to_name[curcls]] = mAP3d_R40[j, 1, i]
                 ret_dict['%s_3d/hard_R40' % class_to_name[curcls]] = mAP3d_R40[j, 2, i]
-                ret_dict['%s_bev/easy_R40' % class_to_name[curcls]] = mAPbev_R40[j, 0, i]
-                ret_dict['%s_bev/moderate_R40' % class_to_name[curcls]] = mAPbev_R40[j, 1, i]
-                ret_dict['%s_bev/hard_R40' % class_to_name[curcls]] = mAPbev_R40[j, 2, i]
-                ret_dict['%s_image/easy_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 0, i]
-                ret_dict['%s_image/moderate_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 1, i]
-                ret_dict['%s_image/hard_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 2, i]
 
         # AP для порогов IoU 0.3 / 0.5 / 0.7 (одно значение для bbox/bev/3d).
         for i, th in enumerate(extra_ious):
