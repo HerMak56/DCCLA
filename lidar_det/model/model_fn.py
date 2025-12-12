@@ -572,11 +572,23 @@ def model_eval_collate_fn(
 
     else:
         try:
+            det_dir = os.path.join(output_dir, "detections")
+            gt_dir_candidates = [
+                "data/JRDB2019/train_dataset_with_activity/labels_kitti",
+                "data/JRDB2022/train_dataset_with_activity/labels_kitti",
+                "data/jrdbmink/train_dataset/labels_kitti",
+            ]
+            gt_dir = next((p for p in gt_dir_candidates if os.path.isdir(p)), None)
+            if gt_dir is None:
+                raise FileNotFoundError(
+                    f"No JRDB ground-truth folder found in {gt_dir_candidates}"
+                )
+
             ap_dict = eval_jrdb(
-                gt_dir="data/jrdbmink/train_dataset/labels_kitti",
-                det_dir=os.path.join(output_dir, "detections"),
+                gt_dir=gt_dir,
+                det_dir=det_dir,
                 rm_det_files=rm_files,
-            )  # NOTE hard-coded path
+            )
 
             for k, v in ap_dict.items():
                 epoch_tb_dict[f"ap_{k}"] = v

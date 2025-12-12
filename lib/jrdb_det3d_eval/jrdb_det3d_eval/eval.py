@@ -642,11 +642,15 @@ def do_eval(gt_annos,
     # return mAP_bbox, mAP_bev, mAP_3d, mAP_aos, mAP_bbox_R40, mAP_bev_R40, mAP_3d_R40, mAP_aos_R40
 ############ @CHANGED
     difficultys = [0, 1, 2]
-    mAP_bbox = np.zeros((1, 3, 2), dtype=np.float32)
-    mAP_bbox_R40 = np.zeros((1, 3, 2), dtype=np.float32)
+    num_classes = len(current_classes) if isinstance(current_classes, (list, tuple)) else 1
+    num_minoverlap = min_overlaps.shape[0]
+
+    # placeholders for metrics we do not compute in this fork (bbox/bev/aos)
+    mAP_bbox = np.zeros((num_classes, 3, num_minoverlap), dtype=np.float32)
+    mAP_bbox_R40 = np.zeros((num_classes, 3, num_minoverlap), dtype=np.float32)
     mAP_aos = mAP_aos_R40 = None
-    mAP_bev = np.zeros((1, 3, 2), dtype=np.float32)
-    mAP_bev_R40 = np.zeros((1, 3, 2), dtype=np.float32)
+    mAP_bev = np.zeros((num_classes, 3, num_minoverlap), dtype=np.float32)
+    mAP_bev_R40 = np.zeros((num_classes, 3, num_minoverlap), dtype=np.float32)
 
     ret = eval_class(gt_annos, dt_annos, current_classes, difficultys, 2, min_overlaps)
     mAP_3d = get_mAP(ret["precision"])
@@ -714,6 +718,15 @@ def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict
     #         break
     mAPbbox, mAPbev, mAP3d, mAPaos, mAPbbox_R40, mAPbev_R40, mAP3d_R40, mAPaos_R40 = do_eval(
         gt_annos, dt_annos, current_classes, min_overlaps, compute_aos, PR_detail_dict=PR_detail_dict)
+
+    # Дополнительные AP для IoU 0.3 / 0.5 / 0.7 (удобно для JRDB, где интересен pedestrian).
+    extra_ious = [0.3, 0.5, 0.7]
+    min_overlaps_extra = np.zeros((len(extra_ious), 3, len(current_classes)), dtype=np.float32)
+    for i, th in enumerate(extra_ious):
+        min_overlaps_extra[i, :, :] = th
+    (mAPbbox_e, mAPbev_e, mAP3d_e, mAPaos_e,
+     mAPbbox_R40_e, mAPbev_R40_e, mAP3d_R40_e, mAPaos_R40_e) = do_eval(
+         gt_annos, dt_annos, current_classes, min_overlaps_extra, compute_aos, PR_detail_dict=None)
 
     ret_dict = {}
     for j, curcls in enumerate(current_classes):
@@ -783,6 +796,26 @@ def get_official_eval_result(gt_annos, dt_annos, current_classes, PR_detail_dict
                 ret_dict['%s_image/easy_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 0, i]
                 ret_dict['%s_image/moderate_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 1, i]
                 ret_dict['%s_image/hard_R40' % class_to_name[curcls]] = mAPbbox_R40[j, 2, i]
+
+        # AP для порогов IoU 0.3 / 0.5 / 0.7 (одно значение для bbox/bev/3d).
+        for i, th in enumerate(extra_ious):
+            result += print_str(
+                (f"{class_to_name[curcls]} "
+                 "AP@{:.1f}, {:.1f}, {:.1f}:".format(th, th, th)))
+            result += print_str((f"bbox AP:{mAPbbox_e[j, 0, i]:.4f}, "
+                                 f"{mAPbbox_e[j, 1, i]:.4f}, "
+                                 f"{mAPbbox_e[j, 2, i]:.4f}"))
+            result += print_str((f"bev  AP:{mAPbev_e[j, 0, i]:.4f}, "
+                                 f"{mAPbev_e[j, 1, i]:.4f}, "
+                                 f"{mAPbev_e[j, 2, i]:.4f}"))
+            result += print_str((f"3d   AP:{mAP3d_e[j, 0, i]:.4f}, "
+                                 f"{mAP3d_e[j, 1, i]:.4f}, "
+                                 f"{mAP3d_e[j, 2, i]:.4f}"))
+            if compute_aos:
+                result += print_str((f"aos  AP:{mAPaos_e[j, 0, i]:.2f}, "
+                                     f"{mAPaos_e[j, 1, i]:.2f}, "
+                                     f"{mAPaos_e[j, 2, i]:.2f}"))
+            result += print_str("")
 
     return result, ret_dict
 

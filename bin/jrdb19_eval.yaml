@@ -1,6 +1,6 @@
 dataloader:
   batch_size: 16
-  num_workers: 12
+  num_workers: 0
 dataset:
   additional_features:
   - intensity
@@ -50,6 +50,6 @@ pipeline:
       lr1: 1.0e-06
   Trainer:
     ckpt_interval: 1
-    epoch: 40
+    epoch: 1
     eval_interval: 100000.0
     grad_norm_clip: -1.0

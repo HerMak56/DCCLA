@@ -256,7 +256,7 @@ class JRDBDet3D(_DatasetBase):
         boxes, _ = ub3d.string_to_boxes(data_dict["label_str"])
 
         # filter out corrupted annotations with negative dimension
-        valid_mask = (boxes[:, 3:6] > 0.0).min(axis=1).astype(np.bool)
+        valid_mask = (boxes[:, 3:6] > 0.0).min(axis=1).astype(bool)
         boxes = boxes[valid_mask]
         boxes_cls = np.zeros(len(boxes), dtype=np.int32)
 
