@@ -1,5 +1,5 @@
 dataloader:
-  batch_size: 16
+  batch_size: 10
   num_workers: 12
 dataset:
   additional_features:

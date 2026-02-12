@@ -540,11 +540,16 @@ def main(opt):
     # convert_2d_gt(opt)
     # convert_2d_gt(opt, train=False)
     # convert_stitched_gt(opt)
-    convert_stitched_gt(opt, train=False)
+    # convert_stitched_gt(opt, train=False)
     # convert_3d_gt(opt)
-    convert_3d_gt(opt, train=False)
+    # convert_3d_gt(opt, train=False)
     # copy_calib(opt)
     # copy_calib(opt, train=False)
+
+    convert_stitched_gt(opt, train=True)
+    convert_stitched_gt(opt, train=False)
+    convert_3d_gt(opt, train=True)
+    convert_3d_gt(opt, train=False)
 
 if __name__ == '__main__':
     opt = parse_arguments()
